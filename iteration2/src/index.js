@@ -1,7 +1,7 @@
 import { watchDirectory } from './watcher.js';
 
-// const directoryPath = '../../evidence/.evidence/template/.svelte-kit/output/prerendered/pages';
-const directoryPath = '../play';
+const directoryPath = '../../evidence/.evidence/template/.svelte-kit/output/prerendered/pages';
+// const directoryPath = '../play';
 const totalExpectedFiles = 5;
 
 console.log('started');
