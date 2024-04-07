@@ -18,19 +18,9 @@ export const getPagesDir = async (pagesDir) => {
   return markdownPages.length
 }
 
-getPagesDir('../../../evidence/pages').then(markdownFileCount => {
-    console.log('Number of Markdown Files:', markdownFileCount);
-  })
-  .catch(err => {
-    console.error('Error:', err);
-  });
-
-
-  // const markdownPages = content.map(async (n) => {
-
-  //   const page = path.join(pagesDir, n);
-  //   const isMarkDown = await fs.stat(page);
-
-  //   if (isMarkDown.isFile()) return 'd';
-  //   return 'lol';
-  // });
+// getPagesDir('../../../evidence/pages').then(markdownFileCount => {
+//     console.log('Number of Markdown Files:', markdownFileCount);
+//   })
+//   .catch(err => {
+//     console.error('Error:', err);
+//   });
