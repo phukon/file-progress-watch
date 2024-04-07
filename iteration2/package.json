@@ -1,0 +1,17 @@
+{
+  "name": "build-progress-monitor",
+  "version": "1.0.0",
+  "description": "Monitor the progress of a build process by checking the number of files in a directory.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.2"
+  },
+  "devDependencies": {
+    "jest": "^27.4.5"
+  },
+  "type": "module"
+}

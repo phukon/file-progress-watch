@@ -1,0 +1,14 @@
+{
+  "name": "build-progress-monitor",
+  "version": "1.0.0",
+  "description": "Monitor the progress of a build process by observing file changes in a directory.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.2"
+  },
+  "devDependencies": {},
+  "type": "module"
+}
