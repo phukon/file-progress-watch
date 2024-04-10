@@ -16,18 +16,18 @@ export const findTemplatePagesPaths = async (directoryPath) => {
     const fileStat = await fs.promises.stat(filePath);
 
     if (fileStat.isDirectory()) {
-      // If it's a directory, recursively search inside it
       const nestedTemplatePagePaths = await findTemplatePagesPaths(filePath);
-      nestedTemplatePagePaths.forEach((absolutePath) => templatePagePaths.add(absolutePath));
+      nestedTemplatePagePaths.forEach((absolutePath) =>
+        templatePagePaths.add(absolutePath)
+      );
     } else if (file.match(/^\[(.*?)\]\.md$/)) {
       // Push absolute path to the set
-      templatePagePaths.add(path.resolve(filePath));
+      templatePagePaths.add(filePath);
     }
   }
 
   return templatePagePaths;
 };
-
 
 /**
  * Check if the given directory contains the parent directories of the template page paths.
@@ -37,32 +37,33 @@ export const findTemplatePagesPaths = async (directoryPath) => {
  * @returns {boolean} True if all parent directories are found, false otherwise
  */
 export const checkParentDirectories = (targetDirectory, templatePagePaths) => {
-  const matchedDirs = new Set();
+  const dirToWatch = new Set();
   for (const templatePath of templatePagePaths) {
-    const parentDir = path.dirname(templatePath);
-    if (parentDir.startsWith(targetDirectory)) {
-      matchedDirs.add(parentDir);
+    console.log(targetDirectory + templatePath);
+    if (fs.existsSync(targetDirectory + templatePath)) {
+      dirToWatch.add(targetDirectory + templatePath);
     }
   }
-  if (matchedDirs.size > 0) {
-    console.log('Matched parent directories:');
-    matchedDirs.forEach((dir) => console.log(dir));
-    return true; // At least one parent directory found
-  } else {
-    console.log('No matching parent directories found.');
-    return false; // No parent directories found
-  }
+  console.log(dirToWatch);
 };
-
 
 async function processTemplatePages() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const directoryPath = '../play';
-  const targetDirectory = path.resolve(__dirname, '../play');
+  const tempDir = '../play';
+  const targetDirectory = path.resolve(__dirname, '../fhg/play');
+  // const targetDirectory = '../fgh/play'
   try {
-    const templatePagePaths = await findTemplatePagesPaths(directoryPath);
-    console.log('Template page paths found:', templatePagePaths);
-    checkParentDirectories(targetDirectory, templatePagePaths);
+    const templatePagePaths = await findTemplatePagesPaths(tempDir);
+    const pathArrays = Array.from(templatePagePaths).map((path) => {
+      const normalizedPath = path.replace(/\\/g, '/');
+      const pathArray = normalizedPath.split('/');
+      return pathArray.slice(2);
+    });
+    
+    
+
+    // console.log('Template page paths found:', pathArrays.map(p => "\\" + path.join(...p)));
+    checkParentDirectories(targetDirectory, pathArrays.map(p => "\\" + path.join(...p)));
     // // Extract and process the parent directories of template Markdown files
     // const parentDirs = new Set();
     // templatePagePaths.forEach((filePath) => {
@@ -82,10 +83,6 @@ async function processTemplatePages() {
 }
 
 processTemplatePages();
-
-
-
-
 
 // Function to check if targetDir has directories defined in parentDirs and count subdirectories
 // async function checkAndCountMatchingDirs(targetDir, parentDirs) {
@@ -134,7 +131,6 @@ processTemplatePages();
 
 //   return count;
 // }
-
 
 // Function to count subdirectories in a given directory
 // async function countSubdirectories(directoryPath) {
