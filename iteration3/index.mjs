@@ -44,9 +44,9 @@ export const checkParentDirectories = async (
   for (const templatePath of templatePagePaths) {
     console.log(targetDirectory + templatePath);
     const fileStat = await fs.promises.stat(targetDirectory + templatePath);
-    // if (fileStat.isDirectory()) {
-    //   console.log('exists :', targetDirectory + templatePath);
-    // }
+    if (fileStat.isDirectory()) {
+      console.log('exists :', targetDirectory + templatePath);
+    }
     if (fs.existsSync(targetDirectory + templatePath)) {
       dirToWatch.add(targetDirectory + templatePath);
     }
