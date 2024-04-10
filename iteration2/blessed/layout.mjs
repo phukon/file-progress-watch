@@ -44,6 +44,8 @@ const menu = blessed.list({
   items: ['Option 1', 'Option 2', 'Option 3', 'Quit'],
 });
 
+menuBox.pushLine('Template pages')
+
 // Create a box for the log area
 const logBox = blessed.box({
   parent: screen,
@@ -70,6 +72,12 @@ const logBox = blessed.box({
 function logMessage(message) {
   // Clear previous content in the log area
   logBox.setContent('');
+  logBox.pushLine('(Use arrow keys to navigate the menu)');
+  logBox.pushLine('Total pages built: ');
+  // logBox.pushLine(' ');
+  //   for (let i=0; i < 11 ; i++) {
+  //   logBox.pushLine(`Selected: ${message}`);
+  // }
   logBox.pushLine(message);
   screen.render();
 }
@@ -88,7 +96,8 @@ screen.key(['escape', 'q', 'C-c'], () => {
 });
 
 // Initial log message
-logMessage('Welcome! Use arrow keys to navigate the menu.');
+logBox.pushLine('(Use arrow keys to navigate the menu)');
+logBox.pushLine('Total pages built: ');
 
 // Focus on the menu to enable keyboard navigation
 menu.focus();

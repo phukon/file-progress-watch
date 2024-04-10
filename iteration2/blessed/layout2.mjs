@@ -1,25 +1,34 @@
 import blessed from 'blessed';
 
-
 // Create a screen
 const screen = blessed.screen({
   smartCSR: true,
   title: 'Terminal Interface',
 });
 
+// Create a header box
+const headerBox = blessed.box({
+  parent: screen,
+  width: '100%',
+  height: 1, // Height of the header
+  content: '{center}My CLI App Header{/center}', // Text inside the header
+  style: {
+    fg: 'white',
+    bg: 'blue', // Background color of the header
+  },
+});
+
 // Create a box for the menu
 const menuBox = blessed.box({
   parent: screen,
-  top: '0',
-  left: '0',
+  top: 1, // Start below the header
   width: '20%',
-  height: '100%',
+  height: '99%', // Adjust height to fit below header
   border: {
     type: 'line',
   },
   style: {
     fg: 'white',
-    bg: 'blue',
     border: {
       fg: 'white',
     },
@@ -35,6 +44,7 @@ const menu = blessed.list({
   height: '90%',
   align: 'center',
   tags: true,
+  keys: true,
   border: {
     type: 'line',
   },
@@ -50,7 +60,6 @@ const menu = blessed.list({
 // Create a box for the log area
 const logBox = blessed.box({
   parent: screen,
-  top: '0',
   left: '20%',
   width: '80%',
   height: '100%',
@@ -72,6 +81,8 @@ const logBox = blessed.box({
 
 // Create a log function
 function logMessage(message) {
+  // Clear previous content in the log area
+  logBox.setContent('');
   logBox.pushLine(message);
   screen.render();
 }
