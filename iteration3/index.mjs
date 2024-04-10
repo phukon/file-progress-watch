@@ -36,10 +36,17 @@ export const findTemplatePagesPaths = async (directoryPath) => {
  * @param {Set<string>} templatePagePaths
  * @returns {boolean} True if all parent directories are found, false otherwise
  */
-export const checkParentDirectories = (targetDirectory, templatePagePaths) => {
+export const checkParentDirectories = async (
+  targetDirectory,
+  templatePagePaths
+) => {
   const dirToWatch = new Set();
   for (const templatePath of templatePagePaths) {
     console.log(targetDirectory + templatePath);
+    const fileStat = await fs.promises.stat(targetDirectory + templatePath);
+    // if (fileStat.isDirectory()) {
+    //   console.log('exists :', targetDirectory + templatePath);
+    // }
     if (fs.existsSync(targetDirectory + templatePath)) {
       dirToWatch.add(targetDirectory + templatePath);
     }
@@ -50,20 +57,24 @@ export const checkParentDirectories = (targetDirectory, templatePagePaths) => {
 async function processTemplatePages() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const tempDir = '../play';
-  const targetDirectory = path.resolve(__dirname, '../fhg/play');
+  const targetDirectory = path.resolve(__dirname, '../fgh/play');
   // const targetDirectory = '../fgh/play'
   try {
     const templatePagePaths = await findTemplatePagesPaths(tempDir);
     const pathArrays = Array.from(templatePagePaths).map((path) => {
       const normalizedPath = path.replace(/\\/g, '/');
       const pathArray = normalizedPath.split('/');
+      pathArray.pop();
       return pathArray.slice(2);
     });
-    
-    
+
+    console.log(pathArrays);
 
     // console.log('Template page paths found:', pathArrays.map(p => "\\" + path.join(...p)));
-    checkParentDirectories(targetDirectory, pathArrays.map(p => "\\" + path.join(...p)));
+    await checkParentDirectories(
+      targetDirectory,
+      pathArrays.map((p) => '\\' + path.join(...p))
+    );
     // // Extract and process the parent directories of template Markdown files
     // const parentDirs = new Set();
     // templatePagePaths.forEach((filePath) => {
