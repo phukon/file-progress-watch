@@ -1,6 +1,5 @@
 import blessed from 'blessed';
 
-
 // Create a screen
 const screen = blessed.screen({
   smartCSR: true,
@@ -10,8 +9,6 @@ const screen = blessed.screen({
 // Create a box for the menu
 const menuBox = blessed.box({
   parent: screen,
-  top: '0',
-  left: '0',
   width: '20%',
   height: '100%',
   border: {
@@ -19,12 +16,10 @@ const menuBox = blessed.box({
   },
   style: {
     fg: 'white',
-    bg: 'blue',
     border: {
       fg: 'white',
     },
   },
-  items: ['Option 1', 'Option 2', 'Option 3', 'Quit'],
 });
 
 // Create a menu
@@ -52,7 +47,6 @@ const menu = blessed.list({
 // Create a box for the log area
 const logBox = blessed.box({
   parent: screen,
-  top: '0',
   left: '20%',
   width: '80%',
   height: '100%',
@@ -74,6 +68,8 @@ const logBox = blessed.box({
 
 // Create a log function
 function logMessage(message) {
+  // Clear previous content in the log area
+  logBox.setContent('');
   logBox.pushLine(message);
   screen.render();
 }
