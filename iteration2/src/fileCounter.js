@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 
 /**
  * Counts the number of files in a given directory.

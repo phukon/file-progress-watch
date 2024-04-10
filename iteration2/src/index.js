@@ -2,8 +2,8 @@ import { getPagesDir } from './get-pages.js';
 import { watchDirectory } from './watcher.js';
 
 async function main() {
-  const directoryPath = '../../evidence/.evidence/template/.svelte-kit/output/prerendered/pages';
-  // const directoryPath = '../play';
+  // const directoryPath = '../../evidence/.evidence/template/.svelte-kit/output/prerendered/pages';
+  const directoryPath = '../play';
 
   try {
     const totalExpectedFiles = await getPagesDir('../../evidence/pages');
