@@ -1,0 +1,16 @@
+{
+  "name": "template-directory-monitor",
+  "version": "1.0.0",
+  "description": "Monitors and mirrors template file directories",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.2",
+    "fs-extra": "^10.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
