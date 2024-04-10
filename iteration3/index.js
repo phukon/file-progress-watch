@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
  * @param {string} directoryPath
  * @returns {Promise<Set<string>>} Set containing paths to template pages
  */
-export const findTemplatePagesPaths = async (directoryPath) => {
+const findTemplatePagesPaths = async (directoryPath) => {
   const templatePagePaths = new Set();
   const files = await fs.promises.readdir(directoryPath);
 
@@ -36,25 +36,25 @@ export const findTemplatePagesPaths = async (directoryPath) => {
  * @param {Set<string>} templatePagePaths
  * @returns {boolean} True if all parent directories are found, false otherwise
  */
-export const checkParentDirectories = async (
+const dirWatchList = async (
   targetDirectory,
   templatePagePaths
 ) => {
   const dirToWatch = new Set();
   for (const templatePath of templatePagePaths) {
-    console.log(targetDirectory + templatePath);
-    const fileStat = await fs.promises.stat(targetDirectory + templatePath);
-    if (fileStat.isDirectory()) {
-      console.log('exists :', targetDirectory + templatePath);
-    }
+    // console.log(targetDirectory + templatePath);
+    // const fileStat = await fs.promises.stat(targetDirectory + templatePath);
+    // if (fileStat.isDirectory()) {
+    //   console.log('exists :', targetDirectory + templatePath);
+    // }
     if (fs.existsSync(targetDirectory + templatePath)) {
       dirToWatch.add(targetDirectory + templatePath);
     }
   }
-  console.log(dirToWatch);
+  return dirToWatch
 };
 
-async function processTemplatePages() {
+async function processTemplatePagePath() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const tempDir = '../play';
   const targetDirectory = path.resolve(__dirname, '../fgh/play');
@@ -69,9 +69,7 @@ async function processTemplatePages() {
     });
 
     console.log(pathArrays);
-
-    // console.log('Template page paths found:', pathArrays.map(p => "\\" + path.join(...p)));
-    await checkParentDirectories(
+    await dirWatchList(
       targetDirectory,
       pathArrays.map((p) => '\\' + path.join(...p))
     );
@@ -93,7 +91,7 @@ async function processTemplatePages() {
   }
 }
 
-processTemplatePages();
+processTemplatePagePath();
 
 // Function to check if targetDir has directories defined in parentDirs and count subdirectories
 // async function checkAndCountMatchingDirs(targetDir, parentDirs) {
