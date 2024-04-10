@@ -1,11 +1,12 @@
 import { findTemplatePagesPaths } from './findTemplatePagesPaths.js';
 import { watchAndDisplayDirectoryTable } from './table.js';
+import { watchDirectory } from './watcher.js';
 
 async function main() {
   const directoryPath = '../fgh/play';
   const dirs = await findTemplatePagesPaths('../play');
 
-  await watchAndDisplayDirectoryTable(
+  await watchDirectory(
     directoryPath,
     dirs,
     (progress) => {
