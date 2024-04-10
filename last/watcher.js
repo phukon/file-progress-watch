@@ -83,7 +83,6 @@ const logBox = blessed.box({
 function logMessage(message) {
   // Clear previous content in the log area
   logBox.setContent('');
-  logBox.pushLine('(Use arrow keys to navigate the menu)');
   logBox.pushLine('Total pages built: ');
   // logBox.pushLine(' ');
   //   for (let i=0; i < 11 ; i++) {
@@ -97,7 +96,7 @@ menu.on('select', (item) => {
   if (item.content === 'Quit') {
     return process.exit(0);
   }
-  logMessage(`Selected: ${item.content}`);
+  logMessage(`\nSelected route:\n ${item.content}`);
 });
 // Handle Escape or Q to quit
 screen.key(['escape', 'q', 'C-c'], () => {
