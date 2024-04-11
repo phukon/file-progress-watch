@@ -60,7 +60,29 @@ const logBox = blessed.box({
   parent: screen,
   left: '80%',
   width: '20%',
-  height: '100%',
+  height: '80%',
+  border: {
+    type: 'line',
+  },
+  scrollbar: {
+    ch: ' ',
+    inverse: true,
+  },
+  style: {
+    fg: 'white',
+    bg: 'black',
+    border: {
+      fg: 'white',
+    },
+  },
+});
+
+const totalBox = blessed.box({
+  parent: screen,
+  top: '80%',
+  left: '80%',
+  width: '20%',
+  height: '20%',
   border: {
     type: 'line',
   },
@@ -79,7 +101,6 @@ const logBox = blessed.box({
 
 function logMessage(message) {
   logBox.setContent('');
-  logBox.pushLine(`Total pages built: ${calculateSumCounts(directoryCounts)}`);
   logBox.pushLine(message);
   screen.render();
 }
@@ -91,12 +112,11 @@ menu.on('select', (item) => {
   logMessage(`\nSelected route:\n ${item.content}`);
     // Debugging: Log the keys in directoryCounts
   // console.log('Keys in directoryCounts:', Object.keys(directoryCounts));
-
   const count = directoryCounts[item.content];
   if (count !== undefined) {
-    logMessage(`\nPages built for \n ${item.content}\n > ${count}`);
+    logMessage(`\nPages built for \n ${item.content}\n\n > ${count}`);
   } else {
-    logMessage(`\nPages built for \n ${item.content}\n > 0`);
+    logMessage(`\nPages built for \n ${item.content}\n\n > 0`);
   }
 });
 
@@ -104,9 +124,12 @@ menu.on('select', (item) => {
 screen.key(['escape', 'q', 'C-c'], () => {
   return process.exit(0);
 });
+
 // Initial log message
-logBox.pushLine('(Use arrow keys to navigate the menu)');
+logBox.pushLine('\n(Use arrow keys to navigate the menu)');
 logBox.pushLine('Total pages built: ');
+totalBox.pushLine('\nbuilding pages... ..');
+totalBox.pushLine(`\nTotal built: ${calculateSumCounts(directoryCounts)}`);
 
 function calculateSumCounts(countsObject) {
   let sum = 0;
@@ -129,7 +152,10 @@ myEmitter.on('message', (c, d) => {
   // console.log('newpath', newPath);
   directoryCounts[newPath] = c;
   // console.log('dircount', directoryCounts);
-  logBox.pushLine('building pages... ..');
+  totalBox.setContent('');
+  totalBox.pushLine('\nbuilding pages... ..');
+  totalBox.pushLine(`\nTotal built: ${calculateSumCounts(directoryCounts)}`);
+  screen.render()
 });
 
 // Focus on the menu to enable keyboard navigation
