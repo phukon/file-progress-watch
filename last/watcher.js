@@ -82,7 +82,7 @@ export async function watchDirectory(
     const pathArrays = Array.from(dirs).map((p) => {
       const pathArray = p.split(path.sep);
       pathArray.pop(); // removing the template page name
-      return pathArray.slice(2); // keeping only the childrens of the target dir
+      return pathArray.slice(2); // removing target dir top paths
     });
 
     const joinedPaths = pathArrays.map((p) => path.sep + path.join(...p));
@@ -109,6 +109,6 @@ export async function watchDirectory(
     }
   } catch (err) {
     console.error('Error:', err);
-    return [];
+    return
   }
 }

@@ -5,6 +5,14 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Global store to hold counts for each directory
 const directoryCounts = {};
+let timeout;
+function resetTimeout() {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    logMessage('No activity detected for over 10 seconds. Killing process...');
+    process.exit(1);
+  }, 5000); 
+}
 
 const screen = blessed.screen({
   smartCSR: true,
@@ -103,7 +111,7 @@ menu.on('select', (item) => {
     return process.exit(0);
   }
   logMessage(`\nSelected route:\n ${item.content}`);
-  // Debugging: Log the keys in directoryCounts
+  // Debugging
   // console.log('Keys in directoryCounts:', Object.keys(directoryCounts));
   const count = directoryCounts[item.content];
   if (count !== undefined) {
@@ -135,6 +143,7 @@ function calculateSumCounts(countsObject) {
 }
 
 process.on('message', ({ type, count, dir }) => {
+  resetTimeout();
   if (type === 'dataFromParent') {
     const shortenedPath = path.relative(__dirname, dir);
     const newPathArray = shortenedPath.split(path.sep);
@@ -166,6 +175,5 @@ process.on('message', ({ type, configArray }) => {
 
 // Focus on the menu to enable keyboard navigation
 menu.focus();
-// Render the screen
 screen.render();
 process.send({ type: 'childReady' });
