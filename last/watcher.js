@@ -6,6 +6,8 @@ import chokidar from 'chokidar';
 import { waitForDirectoryCreation } from './wait-creation.js';
 import { countDirectories } from './countDir.js';
 import EventEmitter from 'events';
+import os from 'os';
+const { tmpdir: tempDir } = os;
 
 let CHILD_READY_FLAG = false;
 let timeout;
@@ -43,7 +45,7 @@ const ensureDirectoryExists = (directory) => {
 };
 
 // Directory paths for log file
-const logsDirectory = path.join(__dirname, 'logs');
+const logsDirectory = path.join(tempDir(), 'evidence-logs');
 ensureDirectoryExists(logsDirectory);
 const stdoutLogPath = path.join(logsDirectory, 'stdout.log');
 const stdoutLog = fs.createWriteStream(stdoutLogPath);
@@ -100,9 +102,7 @@ const dirWatchList = async (targetDirectory, templatePagePaths) => {
  */
 export async function watchDirectory(
   directoryPath,
-  dirs,
-  onProgressUpdate,
-  onStopCallback
+  dirs
 ) {
   const targetDirectory = path.resolve(__dirname, '../fgh/play');
   await waitForDirectoryCreation(directoryPath);

@@ -15,5 +15,8 @@
     "blessed-contrib": "^4.11.0",
     "chokidar": "^3.6.0",
     "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.25"
   }
 }

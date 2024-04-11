@@ -78,8 +78,7 @@ const logBox = blessed.box({
     type: 'line',
   },
   scrollbar: {
-    ch: ' ',
-    inverse: true,
+    ch: ' '
   },
   style: {
     fg: 'white',
@@ -100,8 +99,7 @@ const totalBox = blessed.box({
     type: 'line',
   },
   scrollbar: {
-    ch: ' ',
-    inverse: true,
+    ch: ' '
   },
   style: {
     fg: 'white',

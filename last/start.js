@@ -1,5 +1,4 @@
 import { findTemplatePagesPaths } from './findTemplatePagesPaths.js';
-import { watchAndDisplayDirectoryTable } from './table.js';
 import { watchDirectory } from './watcher.js';
 
 async function main() {
@@ -8,13 +7,7 @@ async function main() {
 
   await watchDirectory(
     directoryPath,
-    dirs,
-    (progress) => {
-      console.log(`Build Progress: ${progress}%`);
-    },
-    () => {
-      console.log('\n All the pages have been built.');
-    }
+    dirs
   );
 }
 
