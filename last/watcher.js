@@ -8,16 +8,16 @@ import { countDirectories } from './countDir.js';
 
 import EventEmitter from 'events';
 import blessed from 'blessed';
-
+// Global store to hold counts for each directory
+const directoryCounts = {};
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const myEmitter = new EventEmitter();
 
-// Create a screen
 const screen = blessed.screen({
   smartCSR: true,
   title: 'Terminal Interface',
 });
 
-// Create a box for the menu
 const menuBox = blessed.box({
   parent: screen,
   width: '80%',
@@ -33,7 +33,6 @@ const menuBox = blessed.box({
   },
 });
 
-// Create a menu
 const menu = blessed.list({
   parent: menuBox,
   top: 'center',
@@ -57,7 +56,6 @@ const menu = blessed.list({
 
 menuBox.pushLine('\t\tTemplate pages');
 
-// Create a box for the log area
 const logBox = blessed.box({
   parent: screen,
   left: '80%',
@@ -79,15 +77,9 @@ const logBox = blessed.box({
   },
 });
 
-// Create a log function
 function logMessage(message) {
-  // Clear previous content in the log area
   logBox.setContent('');
   logBox.pushLine('Total pages built: ');
-  // logBox.pushLine(' ');
-  //   for (let i=0; i < 11 ; i++) {
-  //   logBox.pushLine(`Selected: ${message}`);
-  // }
   logBox.pushLine(message);
   screen.render();
 }
@@ -97,6 +89,10 @@ menu.on('select', (item) => {
     return process.exit(0);
   }
   logMessage(`\nSelected route:\n ${item.content}`);
+  const count = directoryCounts[item.content];
+  if (count !== undefined) {
+    logMessage(`Count for ${item.content} is ${count}`);
+  }
 });
 // Handle Escape or Q to quit
 screen.key(['escape', 'q', 'C-c'], () => {
@@ -105,9 +101,18 @@ screen.key(['escape', 'q', 'C-c'], () => {
 // Initial log message
 logBox.pushLine('(Use arrow keys to navigate the menu)');
 logBox.pushLine('Total pages built: ');
+
+// Event listener for counting directories
 myEmitter.on('message', (c, d) => {
-  logMessage(`Count for ${d} is ${c}`);
+  // Shorten the path to use as the key in directoryCounts
+  const shortenedPath = path.relative(__dirname, d)
+  const newPathArray = shortenedPath.split(path.sep);
+  const newPath = path.sep + newPathArray.slice(3).join(path.sep);
+  console.log('np', newPath)
+  directoryCounts[newPath] = c;
+  logMessage(`Count for ${newPath} is ${c}`);
 });
+
 // Focus on the menu to enable keyboard navigation
 menu.focus();
 // Render the screen
@@ -142,27 +147,21 @@ export async function watchDirectory(
   onProgressUpdate,
   onStopCallback
 ) {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const targetDirectory = path.resolve(__dirname, '../fgh/play');
   await waitForDirectoryCreation(directoryPath);
 
   try {
-    const pathArrays = Array.from(dirs).map((path) => {
-      const normalizedPath = path.replace(/\\/g, '/');
-      const pathArray = normalizedPath.split('/');
+    const pathArrays = Array.from(dirs).map((p) => {
+      const pathArray = p.split(path.sep);
       pathArray.pop();
       return pathArray.slice(2);
     });
 
-    const joinedPaths =  pathArrays.map((p) => '\\' + path.join(...p))
-    const watchList = await dirWatchList(
-      targetDirectory,
-      joinedPaths
-    );
+    const joinedPaths = pathArrays.map((p) => path.sep + path.join(...p));
+    const watchList = await dirWatchList(targetDirectory, joinedPaths);
     menu.clearItems();
-    const watchListArray = Array.from(watchList)
-   
-    menu.setItems([...joinedPaths, " ", 'Quit']);
+
+    menu.setItems([...joinedPaths, ' ', 'Quit']);
 
     const watchers = [];
 
