@@ -3,22 +3,29 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// Global store to hold counts for each directory
+
+/**
+ * Global store to hold counts for each directory.
+ */
 const directoryCounts = {};
 
-/*
-Redundancy: Added this just in case the child process runs in a detached mode and
-doesn't die on parent being killed.
-*/
+/**
+ * Resets the timeout to 20 seconds.
+ * This is added as a redundancy in case the child process runs in a detached mode
+ * and doesn't die on the parent being killed.
+ */
 let timeout;
 function resetTimeout() {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
     logMessage('No activity detected for over 10 seconds. Killing process...');
     process.exit(1);
-  }, 20000); 
+  }, 20_000);
 }
 
+/**
+ * Creates a blessed screen with a menu box and a log box.
+ */
 const screen = blessed.screen({
   smartCSR: true,
   title: 'Terminal Interface',
@@ -105,19 +112,27 @@ const totalBox = blessed.box({
   },
 });
 
+/**
+ * Logs a message to the log box and renders the screen.
+ * @param {string} message - The message to log.
+ */
 function logMessage(message) {
   logBox.setContent('');
   logBox.pushLine(message);
   screen.render();
 }
-// Event handling for menu selection
+
+/**
+ * Event handler for menu selection.
+ * If the selected item is 'Quit', the process exits.
+ * Otherwise, it logs the selected route and the number of pages built for that route.
+ * @param {object} item - The selected menu item.
+ */
 menu.on('select', (item) => {
   if (item.content === 'Quit') {
     return process.exit(0);
   }
   logMessage(`\nSelected route:\n ${item.content}`);
-  // Debugging
-  // console.log('Keys in directoryCounts:', Object.keys(directoryCounts));
   const count = directoryCounts[item.content];
   if (count !== undefined) {
     logMessage(`\nPages built for \n ${item.content}\n\n > ${count}`);
@@ -134,9 +149,14 @@ screen.key(['escape', 'q', 'C-c'], () => {
 // Initial log message
 logBox.pushLine('\n(Use arrow keys to navigate the menu)');
 logBox.pushLine('Total pages built: ');
-totalBox.pushLine('\nbuilding pages...');
+totalBox.pushLine('building pages...');
 totalBox.pushLine(`\nTotal built: ${calculateSumCounts(directoryCounts)}`);
 
+/**
+ * Calculates the sum of all the values in the directoryCounts object.
+ * @param {object} countsObject - The object containing the directory counts.
+ * @returns {number} - The sum of all the counts.
+ */
 function calculateSumCounts(countsObject) {
   let sum = 0;
   for (const key in countsObject) {
@@ -147,8 +167,17 @@ function calculateSumCounts(countsObject) {
   return sum;
 }
 
-process.on('message', ({ type, count, dir }) => {
+/**
+ * Handles messages from the parent process.
+ * If the message type is 'dataFromParent', it updates the directoryCounts object
+ * and the total pages built display.
+ * If the message type is 'config', it updates the menu items.
+ * @param {object} message - The message from the parent process.
+ */
+process.on('message', (message) => {
+  const { type, count, dir, configArray } = message;
   resetTimeout();
+
   if (type === 'dataFromParent') {
     const shortenedPath = path.relative(__dirname, dir);
     const newPathArray = shortenedPath.split(path.sep);
@@ -162,11 +191,7 @@ process.on('message', ({ type, count, dir }) => {
       type: 'dataProcessed',
       result: 'Data processed successfully',
     });
-  }
-});
-
-process.on('message', ({ type, configArray }) => {
-  if (type === 'config') {
+  } else if (type === 'config') {
     console.log(`Received data from parent ${configArray}`);
     menu.clearItems();
     menu.setItems(configArray);

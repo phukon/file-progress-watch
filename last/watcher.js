@@ -9,24 +9,33 @@ import EventEmitter from 'events';
 
 let CHILD_READY_FLAG = false;
 let timeout;
-console.log(timeout)
+console.log(timeout);
 
-/*
-  The timer will only start after the target dir has been
-  created, therefore the process will not be killed prematurely.
-*/
+/**
+ * Resets the timeout to 15 seconds.
+ * The timer will only start after the target directory has been
+ * created, therefore the process will not be killed prematurely.
+ */
 const resetTimeout = () => {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
     console.log('No activity detected for over 10 seconds. Killing process...');
     process.exit(1);
-  }, 15000);
+  }, 15_000);
 };
+
+/**
+ * Custom event emitter for the parent process.
+ */
 class ParentEmitter extends EventEmitter {}
 const parentEmitter = new ParentEmitter();
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ------------------- redirection
+/**
+ * Ensures that a directory exists, creating it if it doesn't.
+ * @param {string} directory - The path to the directory to ensure.
+ */
 const ensureDirectoryExists = (directory) => {
   if (!fs.existsSync(directory)) {
     fs.mkdirSync(directory, { recursive: true });
@@ -44,34 +53,33 @@ stdoutLog.on('error', (err) => {
 
 // Redirect stdout and stderr to log files
 console.log('Redirecting stdout and stderr...');
-// process.stdout.pipe(stdoutLog);
 process.stdout.write = process.stderr.write = stdoutLog.write.bind(stdoutLog);
-// process.stdout.write = stdoutLog.write.bind(stdoutLog);
 console.log('Stream redirection setup complete.');
 
-// --------------
+// Fork the blessed.js process
 const blessedAppProcess = fork(path.join(__dirname, 'blessed.js'));
 
+// Handle messages from the forked process
 blessedAppProcess.on('message', ({ type }) => {
   if (type === 'childReady') {
     CHILD_READY_FLAG = true;
   }
 });
 
-blessedAppProcess.on('message', ({ type, eventName, args }) => {
+blessedAppProcess.on('message', ({ type }) => {
   console.log(`Message from Blessed app: ${type}`);
 });
 
+// Forward messages from the parent process to the forked process
 parentEmitter.on('message', (count, dir) => {
-  CHILD_READY_FLAG &&
-    blessedAppProcess.send({ type: 'dataFromParent', count, dir });
+  CHILD_READY_FLAG && blessedAppProcess.send({ type: 'dataFromParent', count, dir });
 });
 
 /**
- * Return the list of template dirs to be watched
- * @param {string} targetDirectory
- * @param {Array<string>} templatePagePaths
- * @returns {Promise<Set<string>>}
+ * Returns the list of template directories to be watched.
+ * @param {string} targetDirectory - The target directory to search for template pages.
+ * @param {Array<string>} templatePagePaths - The relative paths to the template pages.
+ * @returns {Promise<Set<string>>} - A Set of directory paths to watch.
  */
 const dirWatchList = async (targetDirectory, templatePagePaths) => {
   const dirToWatch = new Set();
@@ -85,10 +93,10 @@ const dirWatchList = async (targetDirectory, templatePagePaths) => {
 
 /**
  * Watches a directory and calculates the progress of files being added.
- * @param {string} directoryPath
- * @param {Set<string>} dirs
- * @param {Function} onProgressUpdate
- * @param {Function} onStopCallback
+ * @param {string} directoryPath - The path to the directory to watch.
+ * @param {Set<string>} dirs - The set of directories to watch.
+ * @param {Function} onProgressUpdate - The callback function to call when progress is updated.
+ * @param {Function} onStopCallback - The callback function to call when the watch stops.
  */
 export async function watchDirectory(
   directoryPath,
