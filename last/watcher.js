@@ -11,6 +11,10 @@ let CHILD_READY_FLAG = false;
 let timeout;
 console.log(timeout)
 
+/*
+  The timer will only start after the target dir has been
+  created, therefore the process will not be killed prematurely.
+*/
 const resetTimeout = () => {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
@@ -119,7 +123,6 @@ export async function watchDirectory(
       watchers.push(watcher);
 
       watcher.on('addDir', async () => {
-        console.log('tooooooooooooooooooo');
         resetTimeout();
         let count = await countDirectories(dir);
         parentEmitter.emit('message', count, dir);
