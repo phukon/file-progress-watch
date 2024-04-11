@@ -79,7 +79,7 @@ const logBox = blessed.box({
 
 function logMessage(message) {
   logBox.setContent('');
-  logBox.pushLine('Total pages built: ');
+  logBox.pushLine(`Total pages built: ${calculateSumCounts(directoryCounts)}`);
   logBox.pushLine(message);
   screen.render();
 }
@@ -89,11 +89,17 @@ menu.on('select', (item) => {
     return process.exit(0);
   }
   logMessage(`\nSelected route:\n ${item.content}`);
+    // Debugging: Log the keys in directoryCounts
+  // console.log('Keys in directoryCounts:', Object.keys(directoryCounts));
+
   const count = directoryCounts[item.content];
   if (count !== undefined) {
-    logMessage(`Count for ${item.content} is ${count}`);
+    logMessage(`\nPages built for \n ${item.content}\n > ${count}`);
+  } else {
+    logMessage(`\nPages built for \n ${item.content}\n > 0`);
   }
 });
+
 // Handle Escape or Q to quit
 screen.key(['escape', 'q', 'C-c'], () => {
   return process.exit(0);
@@ -102,15 +108,28 @@ screen.key(['escape', 'q', 'C-c'], () => {
 logBox.pushLine('(Use arrow keys to navigate the menu)');
 logBox.pushLine('Total pages built: ');
 
+function calculateSumCounts(countsObject) {
+  let sum = 0;
+  for (const key in countsObject) {
+    if (Object.prototype.hasOwnProperty.call(countsObject, key)) {
+      sum += countsObject[key];
+    }
+  }
+  return sum;
+}
+
 // Event listener for counting directories
 myEmitter.on('message', (c, d) => {
   // Shorten the path to use as the key in directoryCounts
-  const shortenedPath = path.relative(__dirname, d)
+  const shortenedPath = path.relative(__dirname, d);
+  // console.log('sp', shortenedPath);
   const newPathArray = shortenedPath.split(path.sep);
-  const newPath = path.sep + newPathArray.slice(3).join(path.sep);
-  console.log('np', newPath)
+  // console.log('newpatharry', newPathArray);
+  const newPath = path.sep + path.join(...newPathArray.slice(3));
+  // console.log('newpath', newPath);
   directoryCounts[newPath] = c;
-  logMessage(`Count for ${newPath} is ${c}`);
+  // console.log('dircount', directoryCounts);
+  logBox.pushLine('building pages... ..');
 });
 
 // Focus on the menu to enable keyboard navigation
@@ -153,30 +172,28 @@ export async function watchDirectory(
   try {
     const pathArrays = Array.from(dirs).map((p) => {
       const pathArray = p.split(path.sep);
-      pathArray.pop();
-      return pathArray.slice(2);
+      pathArray.pop(); // removing the template page name
+      return pathArray.slice(2); // keeping only the childrens of the target dir
     });
 
     const joinedPaths = pathArrays.map((p) => path.sep + path.join(...p));
+
     const watchList = await dirWatchList(targetDirectory, joinedPaths);
     menu.clearItems();
-
     menu.setItems([...joinedPaths, ' ', 'Quit']);
 
     const watchers = [];
 
     for (const dir of watchList) {
-      // console.log(dir)
       const watcher = chokidar.watch(dir, { ignoreInitial: true, depth: 0 });
       watchers.push(watcher);
 
       watcher.on('addDir', async () => {
+        // console.log('dir', dir);
         let count = await countDirectories(dir);
         myEmitter.emit('message', count, dir);
       });
     }
-
-    // console.log(Object.entries(watchers).length)
   } catch (err) {
     console.error('Error:', err);
     return [];
