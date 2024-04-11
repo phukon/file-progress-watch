@@ -79,7 +79,6 @@ const logBox = blessed.box({
 
 function logMessage(message) {
   logBox.setContent('');
-  logBox.pushLine('Total pages built: ');
   logBox.pushLine(message);
   screen.render();
 }
@@ -88,10 +87,10 @@ menu.on('select', (item) => {
   if (item.content === 'Quit') {
     return process.exit(0);
   }
-  logMessage(`\nSelected route:\n ${item.content}`);
+  // logMessage(`selected ${item.content}`)
   const count = directoryCounts[item.content];
   if (count !== undefined) {
-    logMessage(`Count for ${item.content} is ${count}`);
+    logMessage(`\nCount for ${item.content} is ${count}`);
   }
 });
 // Handle Escape or Q to quit
@@ -100,17 +99,39 @@ screen.key(['escape', 'q', 'C-c'], () => {
 });
 // Initial log message
 logBox.pushLine('(Use arrow keys to navigate the menu)');
-logBox.pushLine('Total pages built: ');
+updateSumCountsMessage(calculateSumCounts(directoryCounts));
+
+function updateSumCountsMessage(sumCounts) {
+  logBox.setLine(1, `Total pages built: ${sumCounts}`);
+  screen.render();
+}
+
+// Function to calculate the sum of counts
+function calculateSumCounts(countsObject) {
+  let sum = 0;
+  for (const key in countsObject) {
+    if (Object.prototype.hasOwnProperty.call(countsObject, key)) {
+      sum += countsObject[key];
+    }
+  }
+  return sum;
+}
 
 // Event listener for counting directories
 myEmitter.on('message', (c, d) => {
   // Shorten the path to use as the key in directoryCounts
-  const shortenedPath = path.relative(__dirname, d)
+  const shortenedPath = path.relative(__dirname, d);
   const newPathArray = shortenedPath.split(path.sep);
   const newPath = path.sep + newPathArray.slice(3).join(path.sep);
-  console.log('np', newPath)
   directoryCounts[newPath] = c;
-  logMessage(`Count for ${newPath} is ${c}`);
+
+  // Update log message with the latest count for the directory
+  const logMsg = `Count for ${newPath} is ${c}`;
+  logMessage(logMsg);
+
+  // Calculate and update the sum of counts
+  const sumCounts = calculateSumCounts(directoryCounts);
+  updateSumCountsMessage(sumCounts);
 });
 
 // Focus on the menu to enable keyboard navigation
@@ -166,7 +187,6 @@ export async function watchDirectory(
     const watchers = [];
 
     for (const dir of watchList) {
-      // console.log(dir)
       const watcher = chokidar.watch(dir, { ignoreInitial: true, depth: 0 });
       watchers.push(watcher);
 
@@ -175,8 +195,6 @@ export async function watchDirectory(
         myEmitter.emit('message', count, dir);
       });
     }
-
-    // console.log(Object.entries(watchers).length)
   } catch (err) {
     console.error('Error:', err);
     return [];
