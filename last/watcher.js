@@ -7,6 +7,7 @@ import { waitForDirectoryCreation } from './wait-creation.js';
 import { countDirectories } from './countDir.js';
 import EventEmitter from 'events';
 
+let CHILD_READY_FLAG = false;
 
 class ParentEmitter extends EventEmitter {}
 const parentEmitter = new ParentEmitter();
@@ -33,17 +34,23 @@ console.log('Redirecting stdout and stderr...');
 // process.stdout.pipe(stdoutLog);
 process.stdout.write = process.stderr.write = stdoutLog.write.bind(stdoutLog);
 // process.stdout.write = stdoutLog.write.bind(stdoutLog);
-
 console.log('Stream redirection setup complete.');
 
 // --------------
 const blessedAppProcess = fork(path.join(__dirname, 'blessed.js'));
+
+blessedAppProcess.on('message', ({ type }) => {
+  if (type === 'childReady') {
+    CHILD_READY_FLAG = true;
+  }
+});
+
 blessedAppProcess.on('message', ({ type, eventName, args }) => {
   console.log(`Message from Blessed app: ${type}`);
 });
 
 parentEmitter.on('message', (count, dir) => {
-  blessedAppProcess.send({ type: 'dataFromParent', count, dir });
+  CHILD_READY_FLAG && blessedAppProcess.send({ type: 'dataFromParent', count, dir });
 });
 
 /**
@@ -109,6 +116,6 @@ export async function watchDirectory(
     }
   } catch (err) {
     console.error('Error:', err);
-    return
+    return;
   }
 }
