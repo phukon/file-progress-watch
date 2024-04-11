@@ -8,7 +8,16 @@ import { countDirectories } from './countDir.js';
 import EventEmitter from 'events';
 
 let CHILD_READY_FLAG = false;
+let timeout;
+console.log(timeout)
 
+const resetTimeout = () => {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    console.log('No activity detected for over 10 seconds. Killing process...');
+    process.exit(1);
+  }, 15000);
+};
 class ParentEmitter extends EventEmitter {}
 const parentEmitter = new ParentEmitter();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -50,7 +59,8 @@ blessedAppProcess.on('message', ({ type, eventName, args }) => {
 });
 
 parentEmitter.on('message', (count, dir) => {
-  CHILD_READY_FLAG && blessedAppProcess.send({ type: 'dataFromParent', count, dir });
+  CHILD_READY_FLAG &&
+    blessedAppProcess.send({ type: 'dataFromParent', count, dir });
 });
 
 /**
@@ -109,7 +119,8 @@ export async function watchDirectory(
       watchers.push(watcher);
 
       watcher.on('addDir', async () => {
-        // console.log('dir', dir);
+        console.log('tooooooooooooooooooo');
+        resetTimeout();
         let count = await countDirectories(dir);
         parentEmitter.emit('message', count, dir);
       });

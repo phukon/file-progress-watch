@@ -5,13 +5,18 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Global store to hold counts for each directory
 const directoryCounts = {};
+
+/*
+Redundancy: Added this just in case the child process runs in a detached mode and
+doesn't die on parent being killed.
+*/
 let timeout;
 function resetTimeout() {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
     logMessage('No activity detected for over 10 seconds. Killing process...');
     process.exit(1);
-  }, 5000); 
+  }, 20000); 
 }
 
 const screen = blessed.screen({
